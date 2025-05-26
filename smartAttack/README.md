@@ -2,7 +2,7 @@
 
 This project demonstrates **Smart's Attack** on an ECC system where the trace of Frobenius is 1. The demo includes a vulnerable ECC server and a client that exploits this vulnerability to recover the private key and decrypt a challenge message.
 
-## 📁 File Structure
+## File Structure
 
 * `server.py`: ECC server with a curve vulnerable to Smart's Attack.
 * `client.py`: Client to perform the attack and decrypt the server's challenge.
