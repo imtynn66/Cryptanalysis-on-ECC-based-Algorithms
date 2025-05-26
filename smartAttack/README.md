@@ -1,7 +1,3 @@
-Dưới đây là nội dung đề xuất cho file `README.md` giúp bạn chạy demo tấn công Smart’s Attack trên thuật toán mã hóa đường cong elliptic:
-
----
-
 # Smart's Attack Demo on ECC
 
 This project demonstrates **Smart's Attack** on an ECC system where the trace of Frobenius is 1. The demo includes a vulnerable ECC server and a client that exploits this vulnerability to recover the private key and decrypt a challenge message.
