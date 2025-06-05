@@ -69,7 +69,7 @@ while True:
             sec = random.randint(1, 20)
             num = int(input("Your guess >> "))
             if num == sec:
-                print(open("secret.txt", 'r').read())
+                print("Get fun")
             continue
         else:
             print("wut da heo :((")

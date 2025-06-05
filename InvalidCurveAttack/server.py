@@ -2,7 +2,7 @@
 from elliptic_curve import Curve, Point
 from Crypto.Util.number import bytes_to_long
 import os
-from random import choice
+from random import *
 from secrets import randbelow
 from Crypto.Cipher import ARC4
 
@@ -19,7 +19,7 @@ Gy = 361342509567497957985851279195878819566111066729850150718771982535684144051
 G = Point(E, Gx, Gy)
 
 # server's secret
-d = 11079208921356230762697446949407573529996920224135760342421115906106851204435
+d = randint(1, n-1)
 P = G * d
 
 
