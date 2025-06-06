@@ -3,7 +3,7 @@ from sage.all import random_prime
 
 class Server:
     def __init__(self):
-        # Chọn p lớn (ví dụ: số nguyên tố trong khoảng 2^31)
+
         self.p = random_prime(2**256, lbound=2**255)  # Một số nguyên tố lớn (Mersenne prime)
         # Đường cong CUSP y^2 = a2x^3 +a4x^2 + a6x + b
         a2 = 0
