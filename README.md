@@ -8,7 +8,7 @@
 Universiry of Information Technology
 
 **Course Information:**
-NT219.P22.ANTT
+NT219.P22.ANTT - Cryptography
 
 **Lecturer:** 
 Nguyễn Ngọc Tự
