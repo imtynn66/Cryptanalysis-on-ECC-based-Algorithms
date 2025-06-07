@@ -4,10 +4,10 @@ from sage.all import GF, discrete_log, power_mod
 # --- Lớp Point ---
 class Point:
     def __init__(self, x, y, curve):
-        self.x = GF(curve.p)(x) if x is not None else None
-        self.y = GF(curve.p)(y) if y is not None else None
         self.curve = curve
-
+        F = curve.F
+        self.x = F(x) if x is not None else None
+        self.y = F(y) if y is not None else None
     def __eq__(self, other):
         if not isinstance(other, Point):
             return NotImplemented
@@ -26,46 +26,39 @@ class Point:
 
 # --- Lớp EllipticCurve ---
 class EllipticCurve:
-    def __init__(self, a, b , c , p):
+    def __init__(self, a, b, c, p):
         self.p = p
-        # Các tham số a2, a4, a6 của đường cong y^2 = x^3 + a2*x^2 + a4*x + a6
-        self.a2 = GF(p)(a) if a is not None else GF(p)(0) 
-        self.a4 = GF(p)(b) if b is not None else GF(p)(0)  # A in y^2 = x^3 + Ax + B form if a2=0
-        self.a6 = GF(p)(c) if c is not None else GF(p)(0)  # B in y^2 = x^3 + Ax + B form if a2=0
-        
-        self.O = Point(None, None, self) # Point at infinity
-        discriminant_simplified = (4 * self.a4**3 + 27 * self.a6**2) 
-        
-        if discriminant_simplified.is_zero():
-            R = GF(self.p)['x']
-            x_poly = R.gen()
-            # Define the polynomial f(x) = x^3 + a2*x^2 + a4*x + a6
-            f_poly = x_poly**3 + self.a2 * x_poly**2 + self.a4 * x_poly + self.a6
-            roots_with_multiplicities = f_poly.roots()
-            print(f"Phươn trình : y^2 = x^3 + {self.a2}x^2 + {self.a4}x + {self.a6} (mod {self.p}) có điểm kỳ dị (Singular Point).")
-            if len(roots_with_multiplicities) == 1 and roots_with_multiplicities[0][1] == 3:
-                print(f"  --> Đây là CUSP tại ({roots_with_multiplicities[0][0]}, 0).")
-            elif len(roots_with_multiplicities) > 0 and any(root[1] >= 2 for root in roots_with_multiplicities):
-                print(f"  --> Đây là NODE hoặc CUSP (nghiệm bội).")
-                # More precise check for Node vs Cusp based on derivative
-                singular_points = []
-                f_prime = f_poly.derivative()
-                for root, mult in roots_with_multiplicities:
-                    if f_prime(root) == 0: # Check if it's a singular point
-                        singular_points.append(root)
-                
-                if len(singular_points) == 1 and f_poly(singular_points[0]) == 0 and f_poly.derivative(1)(singular_points[0]) == 0 and f_poly.derivative(2)(singular_points[0]) != 0:
-                     print(f"  --> Đây là NODE tại ({singular_points[0]}, 0).")
-                elif len(singular_points) == 1 and f_poly(singular_points[0]) == 0 and f_poly.derivative(1)(singular_points[0]) == 0 and f_poly.derivative(2)(singular_points[0]) == 0:
-                     print(f"  --> Đây là CUSP tại ({singular_points[0]}, 0).")
-                else:
-                    print("  --> Loại kỳ dị không xác định rõ (có thể là Node hoặc Cusp tùy trường hợp).")
+        self.F = GF(p)
+        self.a2 = self.F(a) if a is not None else self.F(0)
+        self.a4 = self.F(b) if b is not None else self.F(0)
+        self.a6 = self.F(c) if c is not None else self.F(0)
+        self.O = Point(None, None, self)
 
-            else:
-                print("  --> Loại kỳ dị không xác định rõ (có thể là Node hoặc Cusp tùy trường hợp).")
+        print(f"Phương trình: y^2 = x^3 + {self.a2}x^2 + {self.a4}x + {self.a6} (mod {self.p})")
+
+        # Tính biệt thức đơn giản
+        discriminant_simplified = 4 * self.a4**3 + 27 * self.a6**2
+
+        if discriminant_simplified.is_zero():
+            R = self.F['x']
+            x = R.gen()
+            f_poly = x**3 + self.a2 * x**2 + self.a4 * x + self.a6
+            roots = f_poly.roots(multiplicities=True)
+            print("  --> Đường cong có điểm kỳ dị (Singular Curve).")
+
+            f1 = f_poly.derivative(1)
+            f2 = f_poly.derivative(2)
+
+            for root, mult in roots:
+                if f1(root) == 0:
+                    if f2(root) == 0:
+                        print(f"    - CUSP tại ({root}, 0)")
+                    else:
+                        print(f"    - NODE tại ({root}, 0)")
+                else:
+                    print(f"    - Nghiệm bội {mult} nhưng không phải kỳ dị.")
         else:
-            print(f"Đường cong y^2 = x^3 + {self.a2}x^2 + {self.a4}x + {self.a6} (mod {self.p}) là đường cong KHÔNG KỲ DỊ (Non-singular Curve).")
-            
+            print("  --> Đường cong KHÔNG KỲ DỊ (Non-singular Curve).")    
     def is_on_curve(self, x, y):
         if x is None and y is None: # Point at infinity
             return True
@@ -152,11 +145,10 @@ class EllipticCurve:
 
     # --- Hàm tấn công cho Node ---
     def attack_node_method(self, Gx, Gy, Px, Py):
-        R = GF(self.p)['x']
+        R = GF(self.p)['x'] 
         x = R.gen()
         f = x**3 + self.a2 * x**2 + self.a4 * x + self.a6
         roots_with_multiplicities = f.roots()
-        len_roots = len(roots_with_multiplicities)
         alpha = None
         beta = None
         if len(roots_with_multiplicities) == 2:

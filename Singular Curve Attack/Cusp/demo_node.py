@@ -3,22 +3,25 @@ from sage.all import random_prime, GF
 
 class Server:
     def __init__(self):
-        self.p = random_prime(2**256, lbound=2**255)  # Một số nguyên tố lớn (Mersenne prime)
-        # Đường cong CUSP y^2 = a2x^3 +a4x^2 + a6x + b
+        self.p = 4368590184733545720227961182704359358435747188309319510520316493183539079703
+                # Đường cong CUSP y^2 = a2x^3 +a4x^2 + a6x + b
         a2 = 1
         a4 = 0
         a6 = 0
         # y^2 = x^3 ==> cusp
-        self.curve = EllipticCurve( a2 , a4 , a6 , p=self.p)
+        self.curve = EllipticCurve( a2 , a4 , a6 , self.p)
 
-
-        import random
-        self.private_key = random.randint(1, self.p - 1)
         F = GF(self.p)
-        y = F(12).sqrt()
-        self.G = Point(2, y, self.curve)  # Điểm G = (2, sqrt(12))
+        # base point
+        gx = 8742397231329873984594235438374590234800923467289367269837473862487362482
+        gy = 225987949353410341392975247044711665782695329311463646299187580326445253608
+        self.G = Point(gx, gy, self.curve) 
+        # public point
+        px = 2582928974243465355371953056699793745022552378548418288211138499777818633265
+        py = 2421683573446497972507172385881793260176370025964652384676141384239699096612
 
-        self.public_key = self.curve.scalar_multiplication(self.private_key, self.G)
+        self.public_key = Point(px, py, self.curve)
+        self.private_key = 3963903911833444099026001790250531678485652182452420312170405092086735621359
         print(f"\nServer Private Key: {self.private_key}")
         print(f"Server Public Key (P_server): {self.public_key.x}, {self.public_key.y}")
 
