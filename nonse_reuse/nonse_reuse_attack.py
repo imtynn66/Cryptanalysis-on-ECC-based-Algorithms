@@ -342,34 +342,34 @@ class AttackerClient:
                     print(f"[ATTACKER] Signature 2: r={hex(r2)}, s={hex(s2)}")
                     
                     if r1 == r2:
-                        print("\n[ATTACKER] 🚨 NONCE REUSE DETECTED! 🚨")
+                        print("\n[ATTACKER]  NONCE REUSE DETECTED! ")
                         print("[ATTACKER] r1 == r2, attempting to recover private key...")
                         
                         # Thực hiện tấn công
                         results = nonce_reuse_attack(curve_order, m1, r1, s1, m2, r2, s2)
                         
                         for nonce, private_key in results:
-                            print(f"\n[ATTACKER] 🔓 RECOVERED:")
+                            print(f"\n[ATTACKER]  RECOVERED:")
                             print(f"[ATTACKER] Nonce: {hex(nonce)}")
                             print(f"[ATTACKER] Private Key: {hex(private_key)}")
                             
                             # Verify private key
                             recovered_public = self.ecdsa.point_multiply(private_key, (self.ecdsa.Gx, self.ecdsa.Gy))
                             if recovered_public == server_public_key:
-                                print("[ATTACKER] ✅ PRIVATE KEY RECOVERY SUCCESSFUL!")
-                                print("[ATTACKER] ⚠️  Server's private key has been compromised!")
+                                print("[ATTACKER]  PRIVATE KEY RECOVERY SUCCESSFUL!")
+                                print("[ATTACKER]   Server's private key has been compromised!")
                                 
                                 # Demonstrate attack by forging a signature
                                 fake_message = "I am the server"
                                 fake_sig = self.ecdsa.sign(fake_message, private_key)
                                 
                                 if self.ecdsa.verify(fake_message, fake_sig, server_public_key):
-                                    print(f"[ATTACKER] 🎯 Successfully forged signature for: '{fake_message}'")
+                                    print(f"[ATTACKER]  Successfully forged signature for: '{fake_message}'")
                                     print(f"[ATTACKER] Forged signature: r={hex(fake_sig[0])}, s={hex(fake_sig[1])}")
                                 
                                 return True
                             else:
-                                print("[ATTACKER] ❌ Private key verification failed")
+                                print("[ATTACKER]  Private key verification failed")
                     else:
                         print("[ATTACKER] No nonce reuse detected (r1 != r2)")
                 
@@ -401,20 +401,14 @@ def main():
     
     if success:
         print("\n" + "="*60)
-        print("🚨 ATTACK SUCCESSFUL!")
+        print(" ATTACK SUCCESSFUL!")
         print("Lỗ hổng nonce reuse đã được khai thác thành công.")
         print("Private key của server đã bị lộ!")
         print("="*60)
     else:
         print("\n" + "="*60)
-        print("❌ Attack failed or no vulnerability found")
+        print(" Attack failed or no vulnerability found")
         print("="*60)
-    
-    print("\n📚 BÀI HỌC:")
-    print("- KHÔNG BAO GIỜ sử dụng lại nonce trong ECDSA")
-    print("- Luôn sử dụng random number generator an toàn")
-    print("- Implement proper nonce generation theo RFC 6979")
-    print("- Audit code thường xuyên để tránh lỗ hổng này")
 
 if __name__ == "__main__":
     main()
