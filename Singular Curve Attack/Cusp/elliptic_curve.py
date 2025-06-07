@@ -34,18 +34,6 @@ class EllipticCurve:
         self.a6 = GF(p)(c) if c is not None else GF(p)(0)  # B in y^2 = x^3 + Ax + B form if a2=0
         
         self.O = Point(None, None, self) # Point at infinity
-
-        # Discriminant for the general Weierstrass form y^2 = x^3 + a2*x^2 + a4*x + a6
-        # The discriminant (Delta) for y^2 = x^3 + a2x^2 + a4x + a6 is:
-        # Delta = -16 * (4*a4^3 + 27*a6^2 + a2^2*a6 - a2*a4*a6 + a2^3*a6/27)  (this is for exact forms involving a2)
-        # More commonly, for y^2 = x^3 + Ax + B (where A=a4, B=a6 and a2=0):
-        # Delta = -16 * (4*A^3 + 27*B^2)
-        # Given your current setup, it looks like you are considering a2=0 for singularity check.
-        # If a2 is generally non-zero, the discriminant is more complex.
-        # For simplicity and to match the previous error context (y^2 = x^3 + Ax + B), 
-        # let's assume a2=0 for the singularity check, or use a more general discriminant formula if needed.
-        # Let's use the simplified discriminant for y^2 = x^3 + a4*x + a6 for singularity check
-        # as seen in the original code's context of cusp/node.
         discriminant_simplified = (4 * self.a4**3 + 27 * self.a6**2) 
         
         if discriminant_simplified.is_zero():
@@ -58,10 +46,6 @@ class EllipticCurve:
             if len(roots_with_multiplicities) == 1 and roots_with_multiplicities[0][1] == 3:
                 print(f"  --> Đây là CUSP tại ({roots_with_multiplicities[0][0]}, 0).")
             elif len(roots_with_multiplicities) > 0 and any(root[1] >= 2 for root in roots_with_multiplicities):
-                # A singular point has f(x)=0 and f'(x)=0.
-                # For y^2 = f(x), singular points occur where f(x)=0 and f'(x)=0.
-                # A cusp occurs when f(x) has a triple root.
-                # A node occurs when f(x) has two distinct roots, one of which is a double root.
                 print(f"  --> Đây là NODE hoặc CUSP (nghiệm bội).")
                 # More precise check for Node vs Cusp based on derivative
                 singular_points = []
@@ -168,54 +152,66 @@ class EllipticCurve:
 
     # --- Hàm tấn công cho Node ---
     def attack_node_method(self, Gx, Gy, Px, Py):
-        Gx_gf = GF(self.p)(Gx)
-        Gy_gf = GF(self.p)(Gy)
-        Px_gf = GF(self.p)(Px)
-        Py_gf = GF(self.p)(Py)
-
         R = GF(self.p)['x']
         x = R.gen()
-        # Define f(x) based on current curve parameters (a2, a4, a6)
         f = x**3 + self.a2 * x**2 + self.a4 * x + self.a6
         roots_with_multiplicities = f.roots()
-
+        len_roots = len(roots_with_multiplicities)
         alpha = None
         beta = None
-
-        # A node usually has two distinct roots, one of which is a double root.
-        # This typically means one root has multiplicity 2 and another has multiplicity 1.
-        for root, mult in roots_with_multiplicities:
-            if mult == 2:
-                alpha = root
-            elif mult == 1:
-                beta = root
         
-        if alpha is None or beta is None: # Not a typical Node structure
-            print("  Đường cong không phải NODE với nghiệm bội 2, không thể áp dụng tấn công này.")
+        if len(roots_with_multiplicities) == 2:
+            # Tìm double root và simple root
+            if roots_with_multiplicities[0][1] == 2:
+                alpha = roots_with_multiplicities[0][0]  # Double root
+                beta = roots_with_multiplicities[1][0]   # Simple root
+            elif roots_with_multiplicities[1][1] == 2:
+                alpha = roots_with_multiplicities[1][0]  # Double root
+                beta = roots_with_multiplicities[0][0]   # Simple root
+            else:
+                print("Curve is not a node with double root, cannot apply this attack.")
+                return None
+            
+            print(f"Double root: α = {alpha}")
+            print(f"Simple root: β = {beta}")
+            
+            try:
+                # Tính tham số biến đổi
+                t = (alpha - beta).sqrt()
+                print(f"Parameter t = √(α - β) = {t}")
+                
+                # Kiểm tra các trường hợp đặc biệt
+                if Gx == alpha or Px == alpha:
+                    print("Points lie on vertical line x = α, cannot apply this method")
+                    return None
+                    
+                t = (alpha - beta).sqrt()
+                u = (Gy + t * (Gx - alpha)) / (Gy - t * (Gx - alpha))
+                v = (Py + t * (Px - alpha)) / (Py - t * (Px - alpha))
+                
+                print(f"u = (G.y + t(G.x - α))/(G.y - t(G.x - α)) = {u}")
+                print(f"v = (P.y + t(P.x - α))/(P.y - t(P.x - α)) = {v}")
+                
+                # Tính discrete log trong multiplicative group
+                try:
+                    #k = int(v.log(u)) 
+                    k = int(discrete_log(v, u))
+                    print(f"Private key found: k = {k}")
+                    return k
+                except ValueError as e:
+                    print(f"Error in discrete log calculation: {e}")
+                    return None
+                
+            except Exception as e:
+                print(f"Error in node attack: {e}")
+                return None
+        else:
+            print("Curve is not a node with double root, cannot apply this attack.")
             return None
-
-        # Calculate t = sqrt(alpha - beta)
-        try:
-            t = (alpha - beta).sqrt()
-        except Exception as e: # May not find square root
-            print(f"  (alpha - beta) không có căn bậc hai modulo p, không thể áp dụng tấn công này: {e}")
-            return None
-
-        # Map G and P_server to the multiplicative group
-        # This mapping is specific to the node
-        u = (Gy_gf + t * (Gx_gf - alpha)) / (Gy_gf - t * (Gx_gf - alpha))
-        v = (Py_gf + t * (Px_gf - alpha)) / (Py_gf - t * (Px_gf - alpha))
-
-        # Solve Discrete Logarithm in the multiplicative group: v = u^k (mod p)
-        try:
-            return int(discrete_log(v, u))
-        except Exception as e:
-            print(f"  Không thể giải Logarit Rời rạc trong nhóm nhân tính: {e}")
-            return None
-
+        
+        
     def attack_singular_curve(self, server_public_key_point, G):
         print("\n  Đang thực hiện tấn công bằng phương pháp ánh xạ vào nhóm con...")
-
         R = GF(self.p)['x']
         x_poly = R.gen()
         f_poly = x_poly**3 + self.a2 * x_poly**2 + self.a4 * x_poly + self.a6
@@ -235,3 +231,15 @@ class EllipticCurve:
         else:
             print("  --> Không xác định được loại điểm kỳ dị (Node/Cusp) rõ ràng. Không thể áp dụng tấn công cụ thể.")
             return None
+
+def find_valid_point(curve, field):
+    for x_int in range(2, 100):
+        x = field(x_int)
+        rhs = x**2 * (x + 1)
+        if rhs.is_square():
+            y = rhs.sqrt()
+            P = Point(x, y, curve)
+            # Tránh điểm kỳ dị và điểm có hoành độ hoặc tung độ bằng 0
+            if x != 0 and y != 0:
+                return P
+    raise ValueError("Không tìm thấy điểm phù hợp.")

@@ -1,23 +1,22 @@
 from elliptic_curve import EllipticCurve, Point
-from sage.all import random_prime
+from sage.all import random_prime, GF
 
 class Server:
     def __init__(self):
-
         self.p = random_prime(2**256, lbound=2**255)  # Một số nguyên tố lớn (Mersenne prime)
-        # Đường cong CUSP y^2 = x^3 + a2x^2 + a4x + a6
-        a2 = 0
+        # Đường cong CUSP y^2 = a2x^3 +a4x^2 + a6x + b
+        a2 = 1
         a4 = 0
         a6 = 0
         # y^2 = x^3 ==> cusp
         self.curve = EllipticCurve( a2 , a4 , a6 , p=self.p)
 
+
         import random
         self.private_key = random.randint(1, self.p - 1)
-
-        # Điểm G=(1,1) luôn hợp lệ cho y^2=x^3 trên mọi trường
-        # Đảm bảo điểm G được biểu diễn dưới dạng phần tử của GF(p) khi truyền vào
-        self.G = Point(1, 1, self.curve)
+        F = GF(self.p)
+        y = F(12).sqrt()
+        self.G = Point(2, y, self.curve)  # Điểm G = (2, sqrt(12))
 
         self.public_key = self.curve.scalar_multiplication(self.private_key, self.G)
         print(f"\nServer Private Key: {self.private_key}")
@@ -54,7 +53,7 @@ class Client:
         self.curve = EllipticCurve(params["a2"], params["a4"], params["a6"], params["p"])
         self.G = Point(server_data["base_point"]["x"], server_data["base_point"]["y"], self.curve)
         self.server_public_key_point = Point(server_data["server_public_key"]["x"],
-                                              server_data["server_public_key"]["y"], self.curve)
+                                           server_data["server_public_key"]["y"], self.curve)
         print(f"Client nhận thông tin từ Server.")
 
     def generate_client_keys(self):
@@ -87,9 +86,9 @@ class Client:
             print("Tấn công không thành công hoặc không thể suy ra khóa riêng.")
 
 
-# --- Main Demo Cusp ---
+# --- Main Demo Node ---
 if __name__ == "__main__":
-    print("--- DEMO TẤN CÔNG ĐIỂM CUSP (SAGE) ---")
+    print("--- DEMO TẤN CÔNG ĐIỂM NODE (SAGE) ---")
     server = Server()
     client = Client()
 
