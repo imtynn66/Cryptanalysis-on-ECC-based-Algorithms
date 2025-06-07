@@ -159,7 +159,6 @@ class EllipticCurve:
         len_roots = len(roots_with_multiplicities)
         alpha = None
         beta = None
-        
         if len(roots_with_multiplicities) == 2:
             # Tìm double root và simple root
             if roots_with_multiplicities[0][1] == 2:
@@ -170,11 +169,9 @@ class EllipticCurve:
                 beta = roots_with_multiplicities[0][0]   # Simple root
             else:
                 print("Curve is not a node with double root, cannot apply this attack.")
-                return None
-            
+                return None    
             print(f"Double root: α = {alpha}")
-            print(f"Simple root: β = {beta}")
-            
+            print(f"Simple root: β = {beta}")           
             try:
                 # Tính tham số biến đổi
                 t = (alpha - beta).sqrt()
@@ -184,14 +181,11 @@ class EllipticCurve:
                 if Gx == alpha or Px == alpha:
                     print("Points lie on vertical line x = α, cannot apply this method")
                     return None
-                    
-                t = (alpha - beta).sqrt()
                 u = (Gy + t * (Gx - alpha)) / (Gy - t * (Gx - alpha))
                 v = (Py + t * (Px - alpha)) / (Py - t * (Px - alpha))
                 
                 print(f"u = (G.y + t(G.x - α))/(G.y - t(G.x - α)) = {u}")
                 print(f"v = (P.y + t(P.x - α))/(P.y - t(P.x - α)) = {v}")
-                
                 # Tính discrete log trong multiplicative group
                 try:
                     #k = int(v.log(u)) 
