@@ -46,12 +46,13 @@ class EllipticCurve:
             roots = f_poly.roots(multiplicities=True)
             print("  --> Đường cong có điểm kỳ dị (Singular Curve).")
 
-            f1 = f_poly.derivative(1)
-            f2 = f_poly.derivative(2)
-
+            f1 = f_poly.derivative(1) # Tính đạo hàm bậc 1
+            f2 = f_poly.derivative(2) # Tính đạo hàm bậc 2
+            
             for root, mult in roots:
                 if f1(root) == 0:
                     if f2(root) == 0:
+                    # Nếu đạo hàm bậc 1 và bậc 2 đều bằng 0, đó chính là singular point
                         print(f"    - CUSP tại ({root}, 0)")
                     else:
                         print(f"    - NODE tại ({root}, 0)")
@@ -119,8 +120,8 @@ class EllipticCurve:
         Gy_gf = GF(self.p)(Gy)
         Px_gf = GF(self.p)(Px)
         Py_gf = GF(self.p)(Py)
-        print(f"Điểm cơ sở G: ({Gx_gf}, {Gy_gf})")
-        print(f"Khóa công khai P_server: ({Px_gf}, {Py_gf})")
+        print(f"Điểm sinh G: ({Gx_gf}, {Gy_gf})")
+        print(f"Public Key P_server: ({Px_gf}, {Py_gf})")
         
         if len(roots) == 1 and roots[0][1] == 3: # Cusp has a single root with multiplicity 3
             alpha = roots[0][0] # Alpha is the x-coordinate of the Cusp

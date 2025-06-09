@@ -4,7 +4,7 @@ from sage.all import random_prime, GF
 class Server:
     def __init__(self):
         self.p = 4368590184733545720227961182704359358435747188309319510520316493183539079703
-                # Đường cong CUSP y^2 = a2x^3 +a4x^2 + a6x + b
+        # Đường cong NODE y^2 = x^3 +a2x^2 + a4x + a6
         a2 = 1
         a4 = 0
         a6 = 0
