@@ -1,0 +1,5 @@
+ecdsa==0.19.1
+gmpy2==2.2.1
+pwn==1.0
+pycryptodome==3.23.0
+tqdm==4.67.1
