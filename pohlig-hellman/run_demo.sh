@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Dừng các tiến trình cũ có thể đang chạy từ lần demo trước
-pkill -f "py server.py"
+pkill -f "sage server.py"
 
 echo "====================================================="
 echo "      Pohlig-Hellman ECDLP Attack Demo"

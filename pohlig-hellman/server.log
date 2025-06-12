@@ -1,0 +1,14 @@
+==================================================
+Curve defined on GF(115792089210356248762697446949407573530086143415290314195533631308867097853951)
+Generator G: (58739589111611962715835544993606157139975695246024583862682820878769866632269, 86857039837890738158800656283739100419083698574723918755107056633620633897772)
+Order of G: 11579208921035624876269744694940757352983406581957583176174383474827192619340
+Factorization of order: 2^2 * 5 * 7 * 13 * 617 * 4759 * 8260807 * 144722299 * 928070153503 * 2590206143359 * 13389517011401 * 56307812771039
+==================================================
+The order is a 'smooth number', making Pohlig-Hellman attack feasible.
+==================================================
+Traceback (most recent call last):
+  File "/mnt/d/UITerK18/Cryptanalysis-on-ECC-based-Algorithms/pohlig-hellman/server.py", line 114, in <module>
+    main()
+  File "/mnt/d/UITerK18/Cryptanalysis-on-ECC-based-Algorithms/pohlig-hellman/server.py", line 59, in main
+    s.bind((HOST, PORT))
+OSError: [Errno 98] Address already in use
